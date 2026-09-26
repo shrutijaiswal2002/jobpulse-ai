@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobPulse AI - LinkedIn Aggregator & Company Intelligence</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            100: '#e0edff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        cyber: {
+                            dark: '#0b0f19',
+                            card: '#111827',
+                            border: '#1f293d',
+                            accent: '#6366f1',
+                            neon: '#06b6d4',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f3f4f6;
+        }
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        .glow-effect {
+            box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.25);
+        }
+
+        .glow-effect-cyan {
+            box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.25);
+        }
+
+        .pulse-live {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.08); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#080c14] text-slate-100 antialiased">
+
+    <!-- TOP NAVIGATION -->
+    <header class="sticky top-0 z-40 border-b border-slate-800 bg-[#0b0f19]/90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & AI Status Indicator -->
+                <div class="flex items-center space-x-3 shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-cyber-accent to-cyber-neon flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
+                        <i data-lucide="cpu" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">JobPulse <span class="text-indigo-400">AI</span></span>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">v2.4</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs text-emerald-400">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span class="text-[11px] text-slate-400 font-medium">LinkedIn Extractor: <span class="text-emerald-400">Active & Syncing</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Nav Tabs -->
+                <nav class="hidden md:flex items-center space-x-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800 text-sm font-medium">
+                    <button onclick="switchTab('board')" id="nav-board" class="nav-btn px-4 py-1.5 rounded-lg text-indigo-400 bg-indigo-600/10 border border-indigo-500/20 flex items-center gap-2 transition-all">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i> Job Board
+                    </button>
+                    <button onclick="switchTab('simulator')" id="nav-simulator" class="nav-btn px-4 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-2 transition-all">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i> AI Extractor
+                    </button>
+                    <button onclick="switchTab('company')" id="nav-company" class="nav-btn px-4 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-2 transition-all">
+                        <i data-lucide="building-2" class="w-4 h-4 text-purple-400"></i> Company Intelligence
+                    </button>
+                    <button onclick="switchTab('assistant')" id="nav-assistant" class="nav-btn px-4 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-2 transition-all">
+                        <i data-lucide="wand-2" class="w-4 h-4 text-amber-400"></i> AI Outreach Suite
+                    </button>
+                    <button onclick="switchTab('tracker')" id="nav-tracker" class="nav-btn px-4 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-2 transition-all">
+                        <i data-lucide="kanban" class="w-4 h-4 text-emerald-400"></i> Applications
+                    </button>
+                </nav>
+
+                <!-- Quick Stats / User Profile -->
+                <div class="flex items-center space-x-3">
+                    <div class="hidden lg:flex items-center gap-3 pr-3 border-r border-slate-800 text-xs text-slate-400">
+                        <div><span class="text-slate-200 font-bold" id="total-jobs-count">1,482</span> Jobs Extracted</div>
+                        <div><span class="text-emerald-400 font-bold">98.4%</span> AI Accuracy</div>
+                    </div>
+                    <button onclick="openProfileModal()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 p-1.5 px-3 rounded-xl transition text-xs font-medium">
+                        <div class="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center font-bold text-white text-[10px]">
+                            JD
+                        </div>
+                        <span class="hidden sm:inline text-slate-200">Dev Profile</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Row -->
+        <div class="md:hidden flex overflow-x-auto px-4 py-2 bg-slate-900 border-t border-slate-800 gap-2 text-xs">
+            <button onclick="switchTab('board')" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-300 font-medium whitespace-nowrap">Job Board</button>
+            <button onclick="switchTab('simulator')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium whitespace-nowrap">AI Extractor</button>
+            <button onclick="switchTab('company')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium whitespace-nowrap">Company Insights</button>
+            <button onclick="switchTab('assistant')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium whitespace-nowrap">AI Outreach</button>
+            <button onclick="switchTab('tracker')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium whitespace-nowrap">Tracker</button>
+        </div>
+    </header>
+
+    <!-- GLOBAL SEARCH & FILTER STRIP -->
+    <div class="bg-slate-900/60 border-b border-slate-800/80 py-3 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 items-center justify-between">
+            <!-- Search Bar -->
+            <div class="relative w-full md:w-96">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+                <input type="text" id="global-search" onkeyup="filterJobs()" placeholder="Search role, company, skills (e.g. SIEM, Kubernetes, Python)..." 
+                       class="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 transition">
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex items-center flex-wrap gap-2 w-full md:w-auto text-xs">
+                <!-- Location Filter -->
+                <select id="filter-location" onchange="filterJobs()" class="bg-slate-950/80 border border-slate-800 text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <option value="all">All Locations</option>
+                    <option value="Remote">Remote Only</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Onsite">Onsite</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="San Francisco">San Francisco</option>
+                    <option value="London">London</option>
+                </select>
+
+                <!-- Experience Filter -->
+                <select id="filter-exp" onchange="filterJobs()" class="bg-slate-950/80 border border-slate-800 text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <option value="all">Any Experience</option>
+                    <option value="0-2">0 - 2 Years (Junior)</option>
+                    <option value="2-5">2 - 5 Years (Mid)</option>
+                    <option value="5+">5+ Years (Senior/Lead)</option>
+                </select>
+
+                <!-- Scam/Trust Score Filter -->
+                <select id="filter-trust" onchange="filterJobs()" class="bg-slate-950/80 border border-slate-800 text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <option value="all">All Trust Ratings</option>
+                    <option value="high">High Trust (Verified > 85%)</option>
+                    <option value="medium">Medium Trust (> 60%)</option>
+                </select>
+
+                <!-- Reset Filters Button -->
+                <button onclick="resetFilters()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition flex items-center gap-1">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: JOB BOARD -->
+        <section id="tab-board" class="tab-content space-y-6">
+            
+            <!-- Category Tabs -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 overflow-x-auto">
+                <div class="flex items-center space-x-2 text-sm">
+                    <button onclick="setCategory('All')" class="cat-tab px-4 py-2 rounded-xl font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition whitespace-nowrap">
+                        All Roles (<span id="count-all">6</span>)
+                    </button>
+                    <button onclick="setCategory('Cybersecurity')" class="cat-tab px-4 py-2 rounded-xl font-medium text-slate-400 hover:bg-slate-800 transition whitespace-nowrap flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i> Cybersecurity (<span id="count-cyber">2</span>)
+                    </button>
+                    <button onclick="setCategory('DevOps')" class="cat-tab px-4 py-2 rounded-xl font-medium text-slate-400 hover:bg-slate-800 transition whitespace-nowrap flex items-center gap-1.5">
+                        <i data-lucide="server" class="w-4 h-4 text-indigo-400"></i> DevOps & SRE (<span id="count-devops">1</span>)
+                    </button>
+                    <button onclick="setCategory('SDE')" class="cat-tab px-4 py-2 rounded-xl font-medium text-slate-400 hover:bg-slate-800 transition whitespace-nowrap flex items-center gap-1.5">
+                        <i data-lucide="code" class="w-4 h-4 text-emerald-400"></i> Developers / SDE (<span id="count-sde">1</span>)
+                    </button>
+                    <button onclick="setCategory('Data AI')" class="cat-tab px-4 py-2 rounded-xl font-medium text-slate-400 hover:bg-slate-800 transition whitespace-nowrap flex items-center gap-1.5">
+                        <i data-lucide="brain-circuit" class="w-4 h-4 text-purple-400"></i> Data & AI (<span id="count-data">1</span>)
+                    </button>
+                    <button onclick="setCategory('Product')" class="cat-tab px-4 py-2 rounded-xl font-medium text-slate-400 hover:bg-slate-800 transition whitespace-nowrap flex items-center gap-1.5">
+                        <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i> Product & Design (<span id="count-product">1</span>)
+                    </button>
+                </div>
+
+                <div class="hidden xl:flex items-center gap-2 text-xs text-slate-400">
+                    <span>Sort by:</span>
+                    <select id="sort-jobs" onchange="sortJobs()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-2.5 py-1 focus:outline-none">
+                        <option value="recent">Latest Extracted</option>
+                        <option value="match">Highest AI Fit Match</option>
+                        <option value="rating">Glassdoor Rating</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Job Cards Grid -->
+            <div id="job-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Cards dynamically populated by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: AI EXTRACTION SIMULATOR -->
+        <section id="tab-simulator" class="tab-content hidden space-y-6">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-effect">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-cyan-400"></i> AI Post Parsing Engine & Bifurcator
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Paste raw LinkedIn unstructured text or HR job posts. Watch the NLP models parse, structure, classify, and match company intelligence in real time.</p>
+                    </div>
+                    <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs rounded-full font-mono">LLM Model: Claude 3.5 Sonnet + Custom NER</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Input Section -->
+                    <div class="space-y-4">
+                        <label class="block text-xs font-medium text-slate-300">Raw LinkedIn Post Snippet / HR Feed Input:</label>
+                        <textarea id="raw-post-input" rows="11" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-200 code-font focus:outline-none focus:border-indigo-500 leading-relaxed placeholder-slate-600"
+placeholder="🚀 WE ARE HIRING! 🚀
+
+Company: Sentinel Cybersecurity Solutions Inc.
+Role: Senior Incident Response & SIEM Analyst
+Experience Required: 3 to 5 Years
+Location: Hybrid - Bengaluru, India
+Openings: 4 Positions
+
+Key Responsibilities:
+- Manage SIEM pipelines (Splunk / Elastic) and threat hunting.
+- Analyze malware samples and conduct forensically sound investigations.
+- Automation via Python & Ansible.
+
+Send your resume directly to hr.talent@sentinelcyber.io with subject 'SIEM-2026' or apply at https://linkedin.com/jobs/view/987123654"></textarea>
+
+                        <div class="flex items-center justify-between gap-3">
+                            <button onclick="loadSampleSnippet()" class="text-xs text-slate-400 hover:text-indigo-400 underline font-medium">Load alternate sample post</button>
+                            <button onclick="runAIExtractor()" id="btn-run-extract" class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition">
+                                <i data-lucide="cpu" class="w-4 h-4"></i> Extract & Categorize with AI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Visual AI Processing Steps -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> AI Extraction Terminal Pipeline
+                            </h3>
+                            
+                            <div class="space-y-3 text-xs">
+                                <!-- Step 1 -->
+                                <div id="sim-step-1" class="p-2.5 rounded-lg border border-slate-800/80 bg-slate-900/50 flex items-center justify-between opacity-50">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="step-icon w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-slate-400 font-bold">1</div>
+                                        <div>
+                                            <div class="font-medium text-slate-300">NER Entity Extraction</div>
+                                            <div class="text-[10px] text-slate-500">Extracting Role, Company, HR Email, Experience, Location</div>
+                                        </div>
+                                    </div>
+                                    <span class="step-status text-[10px] font-mono text-slate-500">Idle</span>
+                                </div>
+
+                                <!-- Step 2 -->
+                                <div id="sim-step-2" class="p-2.5 rounded-lg border border-slate-800/80 bg-slate-900/50 flex items-center justify-between opacity-50">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="step-icon w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-slate-400 font-bold">2</div>
+                                        <div>
+                                            <div class="font-medium text-slate-300">Category Bifurcation AI</div>
+                                            <div class="text-[10px] text-slate-500">Cybersecurity / SDE / DevOps classification</div>
+                                        </div>
+                                    </div>
+                                    <span class="step-status text-[10px] font-mono text-slate-500">Idle</span>
+                                </div>
+
+                                <!-- Step 3 -->
+                                <div id="sim-step-3" class="p-2.5 rounded-lg border border-slate-800/80 bg-slate-900/50 flex items-center justify-between opacity-50">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="step-icon w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-slate-400 font-bold">3</div>
+                                        <div>
+                                            <div class="font-medium text-slate-300">Glassdoor & Forum Cross-Match</div>
+                                            <div class="text-[10px] text-slate-500">Scraping company ratings, pros/cons, and ghost risk</div>
+                                        </div>
+                                    </div>
+                                    <span class="step-status text-[10px] font-mono text-slate-500">Idle</span>
+                                </div>
+
+                                <!-- Step 4 -->
+                                <div id="sim-step-4" class="p-2.5 rounded-lg border border-slate-800/80 bg-slate-900/50 flex items-center justify-between opacity-50">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="step-icon w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-slate-400 font-bold">4</div>
+                                        <div>
+                                            <div class="font-medium text-slate-300">Structured Output & Live Publishing</div>
+                                            <div class="text-[10px] text-slate-500">Formulating JSON object and pushing to live feed</div>
+                                        </div>
+                                    </div>
+                                    <span class="step-status text-[10px] font-mono text-slate-500">Idle</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- JSON Output Preview -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/80">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[11px] font-mono text-slate-400">AI Structured JSON Output:</span>
+                                <span id="sim-conf" class="text-[10px] text-emerald-400 font-bold hidden">Confidence: 98.7%</span>
+                            </div>
+                            <pre id="json-result" class="bg-slate-900 p-2.5 rounded-lg text-[10px] code-font text-slate-400 h-28 overflow-y-auto leading-tight">Click 'Extract & Categorize with AI' to trigger parsing pipeline...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: COMPANY INTELLIGENCE & GLASSDOOR DEEP DIVE -->
+        <section id="tab-company" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+                        <i data-lucide="building-2" class="w-5 h-5 text-purple-400"></i> Glassdoor & Forum Intelligence Hub
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Aggregated feedback, workplace culture, salary trends, and candidate interview difficulty scraped across Reddit, Blind, Glassdoor & AmbitionBox.</p>
+                </div>
+                <div class="w-full sm:w-auto">
+                    <select id="intel-company-select" onchange="renderCompanyIntelView()" class="w-full sm:w-auto bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="Sentinel Cyber Solutions">Sentinel Cyber Solutions</option>
+                        <option value="CloudScale Systems">CloudScale Systems</option>
+                        <option value="FinTech Global">FinTech Global</option>
+                        <option value="NeuralMind AI">NeuralMind AI</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dynamic Company Details Container -->
+            <div id="company-intel-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Rendered dynamically by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 4: AI OUTREACH & APPLICATION ASSISTANT -->
+        <section id="tab-assistant" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Cold Email & Cover Letter Generator -->
+                <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="wand-2" class="w-5 h-5 text-amber-400"></i> AI Cold Email & Pitch Generator
+                        </h2>
+                        <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full font-medium">Tuned for LinkedIn HR Recruiter Outreach</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <label class="block text-slate-300 font-medium mb-1">Select Extracted Job:</label>
+                            <select id="outreach-job-select" onchange="updateOutreachContext()" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-amber-500">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-medium mb-1">Email Tone & Angle:</label>
+                            <select id="outreach-tone" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-2.5 focus:outline-none focus:border-amber-500">
+                                <option value="direct">Direct & Skill-Focused (Best for Tech Roles)</option>
+                                <option value="enthusiastic">Enthusiastic & Growth-Oriented</option>
+                                <option value="executive">Concise Executive Pitch (2-3 Sentences)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="generateColdEmail()" class="w-full py-2.5 bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-medium text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Cold Email & Tailored Pitch
+                    </button>
+
+                    <div class="space-y-2 pt-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-400">Generated HR Outreach Copy:</span>
+                            <button onclick="copyGeneratedEmail()" class="text-xs text-amber-400 hover:underline flex items-center gap-1">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy to Clipboard
+                            </button>
+                        </div>
+                        <textarea id="generated-email-output" rows="9" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-200 code-font focus:outline-none focus:border-amber-500 leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Skill Gap & Scam Risk Insights Column -->
+                <div class="space-y-6">
+                    <!-- Skill Gap Analyzer Card -->
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i> Skill Gap Analyzer
+                        </h3>
+                        <p class="text-xs text-slate-400">Based on your candidate profile vs selected job requirements:</p>
+                        
+                        <div class="space-y-2 text-xs" id="skill-gap-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Ghosting Predictor Card -->
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i> HR Response Predictor
+                        </h3>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">Average HR Response Time:</span>
+                                <span class="font-bold text-indigo-400">3.2 Days</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">Community Ghosting Rate:</span>
+                                <span class="font-bold text-amber-400">14% (Low Risk)</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">Best Application Window:</span>
+                                <span class="font-bold text-emerald-400">Tuesdays, 9-11 AM IST</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: APPLICATION TRACKER -->
+        <section id="tab-tracker" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+                        <i data-lucide="kanban" class="w-5 h-5 text-emerald-400"></i> Personal Application Kanban Tracker
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Track jobs extracted from LinkedIn directly through your pipeline stages.</p>
+                </div>
+                <button onclick="switchTab('board')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add From Board
+                </button>
+            </div>
+
+            <!-- Kanban Board Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Column 1: Saved / Bookmarked -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Saved Roles
+                        </span>
+                        <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-mono">2</span>
+                    </div>
+                    <div class="space-y-2.5" id="kanban-saved">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Column 2: Applied / Outreach Sent -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Applied / Emailed
+                        </span>
+                        <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full font-mono">2</span>
+                    </div>
+                    <div class="space-y-2.5" id="kanban-applied">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Column 3: Interviewing -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Interviewing
+                        </span>
+                        <span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full font-mono">1</span>
+                    </div>
+                    <div class="space-y-2.5" id="kanban-interviewing">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Column 4: Offer Received -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Offer Stage
+                        </span>
+                        <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-mono">1</span>
+                    </div>
+                    <div class="space-y-2.5" id="kanban-offer">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: GLASSDOOR & COMPANY INTELLIGENCE MODAL -->
+    <div id="company-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto relative shadow-2xl">
+            <button onclick="closeCompanyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800/50">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="modal-company-content">
+                <!-- Dynamic Content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: USER PROFILE / MATCH PREFERENCE MODAL -->
+    <div id="profile-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 relative shadow-2xl">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800/50">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                    JD
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-100 text-sm">Candidate Profile Settings</h3>
+                    <p class="text-xs text-slate-400">Used by AI to calculate your Job Fit Score %</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Your Primary Track:</label>
+                    <select id="user-track-select" onchange="updateProfileSkills()" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-2 focus:outline-none focus:border-indigo-500">
+                        <option value="Cybersecurity">Cybersecurity / Incident Response</option>
+                        <option value="DevOps">DevOps / Cloud Platform Engineer</option>
+                        <option value="SDE">Software Engineer (Fullstack/Backend)</option>
+                        <option value="Data AI">Data Engineer / AI ML Engineer</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Your Experience Level:</label>
+                    <select id="user-exp-select" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-2 focus:outline-none focus:border-indigo-500">
+                        <option value="3">3 Years (Mid Level)</option>
+                        <option value="1">1 Year (Junior)</option>
+                        <option value="5">5+ Years (Senior)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Your Core Skills (comma separated):</label>
+                    <input type="text" id="user-skills-input" value="Python, SIEM, Splunk, Kubernetes, Docker, Network Security" 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+
+            <button onclick="saveUserProfile()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition text-xs">
+                Save Candidate Preferences & Recalculate Scores
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // SAMPLE INITIAL DATASET EXTRACTED FROM LINKEDIN
+        let jobsData = [
+            {
+                id: "job-101",
+                company: "Sentinel Cyber Solutions",
+                logoBg: "bg-indigo-600",
+                logoText: "SC",
+                verified: true,
+                role: "Senior Incident Response & SIEM Analyst",
+                category: "Cybersecurity",
+                experience: "3-5 yrs",
+                openings: 4,
+                location: "Hybrid (Bengaluru)",
+                workType: "Hybrid",
+                salary: "₹18L - ₹26L / yr",
+                skills: ["SIEM", "Splunk", "Python", "Threat Hunting", "Incident Response"],
+                hrEmail: "hr.talent@sentinelcyber.io",
+                applyType: "email",
+                applyLink: "mailto:hr.talent@sentinelcyber.io?subject=Application for SIEM Analyst",
+                linkedInUrl: "https://linkedin.com/jobs/view/3891023",
+                glassdoorRating: 4.4,
+                reviewCount: 310,
+                scamTrustScore: 96,
+                fitMatch: 94,
+                postedTime: "2 hours ago",
+                status: "saved"
+            },
+            {
+                id: "job-102",
+                company: "CloudScale Systems",
+                logoBg: "bg-cyan-600",
+                logoText: "CS",
+                verified: true,
+                role: "Lead DevOps & Kubernetes Architect",
+                category: "DevOps",
+                experience: "4-7 yrs",
+                openings: 2,
+                location: "Remote (India)",
+                workType: "Remote",
+                salary: "₹28L - ₹42L / yr",
+                skills: ["Kubernetes", "Terraform", "AWS", "Docker", "CI/CD Pipeline"],
+                hrEmail: "careers@cloudscalesystems.com",
+                applyType: "form",
+                applyLink: "https://cloudscalesystems.com/careers/apply?id=99",
+                linkedInUrl: "https://linkedin.com/jobs/view/3894411",
+                glassdoorRating: 4.1,
+                reviewCount: 185,
+                scamTrustScore: 92,
+                fitMatch: 82,
+                postedTime: "5 hours ago",
+                status: "applied"
+            },
+            {
+                id: "job-103",
+                company: "FinTech Global",
+                logoBg: "bg-purple-600",
+                logoText: "FG",
+                verified: true,
+                role: "Senior Backend SDE (Node.js / Go)",
+                category: "SDE",
+                experience: "2-4 yrs",
+                openings: 6,
+                location: "Onsite (Bengaluru)",
+                workType: "Onsite",
+                salary: "₹22L - ₹32L / yr",
+                skills: ["Node.js", "Golang", "PostgreSQL", "Kafka", "Microservices"],
+                hrEmail: "tech-recruiting@fintechglobal.io",
+                applyType: "link",
+                applyLink: "https://fintechglobal.io/jobs/backend-sde",
+                linkedInUrl: "https://linkedin.com/jobs/view/3897722",
+                glassdoorRating: 3.9,
+                reviewCount: 520,
+                scamTrustScore: 88,
+                fitMatch: 76,
+                postedTime: "1 day ago",
+                status: "interviewing"
+            },
+            {
+                id: "job-104",
+                company: "NeuralMind AI",
+                logoBg: "bg-emerald-600",
+                logoText: "NM",
+                verified: true,
+                role: "AI/ML Operations & LLM Engineer",
+                category: "Data AI",
+                experience: "2-5 yrs",
+                openings: 3,
+                location: "Hybrid (San Francisco / Remote)",
+                workType: "Hybrid",
+                salary: "$130k - $175k",
+                skills: ["Python", "PyTorch", "LangChain", "Vector DBs", "Docker"],
+                hrEmail: "apply@neuralmind.ai",
+                applyType: "email",
+                applyLink: "mailto:apply@neuralmind.ai?subject=AI ML Engineer Role",
+                linkedInUrl: "https://linkedin.com/jobs/view/3890099",
+                glassdoorRating: 4.6,
+                reviewCount: 88,
+                scamTrustScore: 95,
+                fitMatch: 89,
+                postedTime: "4 hours ago",
+                status: "saved"
+            },
+            {
+                id: "job-105",
+                company: "CyberSec Analytics Hub",
+                logoBg: "bg-rose-600",
+                logoText: "CA",
+                verified: false,
+                role: "SOC Level 2 Threat Analyst",
+                category: "Cybersecurity",
+                experience: "1-3 yrs",
+                openings: 1,
+                location: "Remote (Global)",
+                workType: "Remote",
+                salary: "₹10L - ₹15L / yr",
+                skills: ["Network Security", "Wireshark", "EDR", "SIEM", "SOC"],
+                hrEmail: "jobs-soc@cybersecanalyticshub.org",
+                applyType: "email",
+                applyLink: "mailto:jobs-soc@cybersecanalyticshub.org",
+                linkedInUrl: "https://linkedin.com/jobs/view/3893321",
+                glassdoorRating: 3.6,
+                reviewCount: 42,
+                scamTrustScore: 78,
+                fitMatch: 91,
+                postedTime: "1 day ago",
+                status: "applied"
+            },
+            {
+                id: "job-106",
+                company: "Apex Product Labs",
+                logoBg: "bg-amber-600",
+                logoText: "AP",
+                verified: true,
+                role: "Senior Product Designer (UI/UX Design Systems)",
+                category: "Product",
+                experience: "3-6 yrs",
+                openings: 2,
+                location: "Hybrid (London)",
+                workType: "Hybrid",
+                salary: "£65k - £85k",
+                skills: ["Figma", "Design Systems", "User Research", "Prototyping"],
+                hrEmail: "talent@apexproductlabs.co.uk",
+                applyType: "form",
+                applyLink: "https://apexproductlabs.co.uk/careers",
+                linkedInUrl: "https://linkedin.com/jobs/view/3891100",
+                glassdoorRating: 4.3,
+                reviewCount: 140,
+                scamTrustScore: 94,
+                fitMatch: 62,
+                postedTime: "2 days ago",
+                status: "offer"
+            }
+        ];
+
+        // COMPANY INTELLIGENCE DATASTORE
+        const companyIntel = {
+            "Sentinel Cyber Solutions": {
+                name: "Sentinel Cyber Solutions",
+                overallRating: 4.4,
+                workLifeBalance: 4.2,
+                careerGrowth: 4.5,
+                management: 4.1,
+                pros: ["Strong cybersecurity technical culture", "Generous certification allowance (CISSP/CEH)", "Flexible hybrid model"],
+                cons: ["On-call rotation during critical incident spikes", "Fast-paced high-pressure deadlines"],
+                interviewProcess: "3 Rounds: 1. Technical Screening (SIEM/Linux) -> 2. Hands-on SOC Threat Hunting Scenario -> 3. Engineering Manager Culture Fit.",
+                salaryBenchmark: "Senior Analyst: ₹18L - ₹26L (Market standard is ₹20L)",
+                aiSummary: "Very high engineering rating with great growth for security engineers, though incident response on-call duties can demand occasional weekend shifts."
+            },
+            "CloudScale Systems": {
+                name: "CloudScale Systems",
+                overallRating: 4.1,
+                workLifeBalance: 4.0,
+                careerGrowth: 4.2,
+                management: 3.9,
+                pros: ["100% Remote flexibility", "Cutting-edge Kubernetes/Cloud native stack", "Great equity options"],
+                cons: ["Rapidly shifting startup priorities", "Documentation needs improvement"],
+                interviewProcess: "4 Rounds: 1. Recruiter Call -> 2. Live Infrastructure Automation Task (Terraform/K8s) -> 3. System Architecture Deep Dive -> 4. VP Culture.",
+                salaryBenchmark: "DevOps Lead: ₹28L - ₹42L (Top 10% percentile)",
+                aiSummary: "Excellent remote-first culture with high compensation, ideal for self-driven cloud architects."
+            },
+            "FinTech Global": {
+                name: "FinTech Global",
+                overallRating: 3.9,
+                workLifeBalance: 3.5,
+                careerGrowth: 4.1,
+                management: 3.7,
+                pros: ["High salary packages and annual bonuses", "High-volume distributed banking tech"],
+                cons: ["Strict onsite presence requirement", "Legacy corporate bureaucracy in approval workflows"],
+                interviewProcess: "3 Rounds: 1. Leetcode Algorithms Test -> 2. Low-Level System Design (Kafka/Concurrency) -> 3. Director Round.",
+                salaryBenchmark: "Backend SDE: ₹22L - ₹32L",
+                aiSummary: "Lucrative compensation structure, but requires full onsite presence and copes with enterprise fintech governance."
+            },
+            "NeuralMind AI": {
+                name: "NeuralMind AI",
+                overallRating: 4.6,
+                workLifeBalance: 4.3,
+                careerGrowth: 4.8,
+                management: 4.5,
+                pros: ["Working with state-of-the-art LLM infra", "Top-tier AI research team", "Flexible policy"],
+                cons: ["High ambiguity in fast-moving projects"],
+                interviewProcess: "3 Rounds: 1. Python/PyTorch Code Review -> 2. AI Architecture & Vector DB optimization -> 3. Founder chat.",
+                salaryBenchmark: "AI Engineer: $130k - $175k",
+                aiSummary: "Top tier ratings across the board. Outstanding growth for Machine Learning and LLM practitioners."
+            }
+        };
+
+        let currentCategory = "All";
+        let candidateProfile = {
+            track: "Cybersecurity",
+            exp: 3,
+            skills: ["Python", "SIEM", "Splunk", "Kubernetes", "Docker", "Network Security"]
+        };
+
+        window.onload = function() {
+            lucide.createIcons();
+            renderJobCards();
+            updateCategoryCounts();
+            renderCompanyIntelView();
+            populateOutreachJobSelect();
+            renderKanbanBoard();
+            updateOutreachContext();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            // Button styling
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-indigo-400', 'bg-indigo-600/10', 'border', 'border-indigo-500/20');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('text-indigo-400', 'bg-indigo-600/10', 'border', 'border-indigo-500/20');
+            }
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-tab').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg');
+                btn.classList.add('text-slate-400');
+            });
+            event.currentTarget.classList.remove('text-slate-400');
+            event.currentTarget.classList.add('bg-indigo-600', 'text-white', 'shadow-lg');
+            
+            filterJobs();
+        }
+
+        function updateCategoryCounts() {
+            document.getElementById('count-all').innerText = jobsData.length;
+            document.getElementById('count-cyber').innerText = jobsData.filter(j => j.category === 'Cybersecurity').length;
+            document.getElementById('count-devops').innerText = jobsData.filter(j => j.category === 'DevOps').length;
+            document.getElementById('count-sde').innerText = jobsData.filter(j => j.category === 'SDE').length;
+            document.getElementById('count-data').innerText = jobsData.filter(j => j.category === 'Data AI').length;
+            document.getElementById('count-product').innerText = jobsData.filter(j => j.category === 'Product').length;
+        }
+
+        function filterJobs() {
+            const query = document.getElementById('global-search').value.toLowerCase();
+            const locFilter = document.getElementById('filter-location').value;
+            const expFilter = document.getElementById('filter-exp').value;
+            const trustFilter = document.getElementById('filter-trust').value;
+
+            const filtered = jobsData.filter(job => {
+                // Category filter
+                if (currentCategory !== "All" && job.category !== currentCategory) return false;
+
+                // Search query
+                const matchSearch = job.role.toLowerCase().includes(query) ||
+                                    job.company.toLowerCase().includes(query) ||
+                                    job.skills.some(s => s.toLowerCase().includes(query));
+                if (!matchSearch) return false;
+
+                // Location filter
+                if (locFilter !== "all") {
+                    if (locFilter === "Remote" && job.workType !== "Remote") return false;
+                    if (locFilter === "Hybrid" && job.workType !== "Hybrid") return false;
+                    if (locFilter === "Onsite" && job.workType !== "Onsite") return false;
+                    if (!["Remote", "Hybrid", "Onsite"].includes(locFilter) && !job.location.includes(locFilter)) return false;
+                }
+
+                // Experience filter
+                if (expFilter === "0-2" && !job.experience.includes("1") && !job.experience.includes("2")) return false;
+                if (expFilter === "2-5" && !job.experience.includes("2") && !job.experience.includes("3") && !job.experience.includes("4")) return false;
+                if (expFilter === "5+" && !job.experience.includes("5") && !job.experience.includes("6") && !job.experience.includes("7")) return false;
+
+                // Trust Score filter
+                if (trustFilter === "high" && job.scamTrustScore < 85) return false;
+                if (trustFilter === "medium" && job.scamTrustScore < 60) return false;
+
+                return true;
+            });
+
+            renderJobCards(filtered);
+        }
+
+        function sortJobs() {
+            const sortVal = document.getElementById('sort-jobs').value;
+            let sorted = [...jobsData];
+            if (sortVal === "match") {
+                sorted.sort((a,b) => b.fitMatch - a.fitMatch);
+            } else if (sortVal === "rating") {
+                sorted.sort((a,b) => b.glassdoorRating - a.glassdoorRating);
+            }
+            renderJobCards(sorted);
+        }
+
+        function resetFilters() {
+            document.getElementById('global-search').value = "";
+            document.getElementById('filter-location').value = "all";
+            document.getElementById('filter-exp').value = "all";
+            document.getElementById('filter-trust').value = "all";
+            filterJobs();
+        }
+
+        function renderJobCards(list = jobsData) {
+            const container = document.getElementById('job-cards-container');
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-slate-900/40 border border-slate-800 rounded-2xl">
+                        <i data-lucide="search-x" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+                        <h3 class="text-sm font-semibold text-slate-300">No matching jobs extracted</h3>
+                        <p class="text-xs text-slate-500 mt-1">Try resetting your search query or location filters.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = list.map(job => {
+                const isSaved = job.status === "saved";
+                return `
+                <div class="bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 space-y-4 transition-all duration-200 glow-effect relative flex flex-col justify-between">
+                    <div>
+                        <!-- Header Row -->
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl ${job.logoBg} flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                    ${job.logoText}
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-1.5">
+                                        <h4 class="font-bold text-slate-200 text-xs sm:text-sm leading-tight hover:text-indigo-400 cursor-pointer" onclick="openCompanyModal('${job.company}')">${job.company}</h4>
+                                        ${job.verified ? '<i data-lucide="check-circle" class="w-3.5 h-3.5 text-cyan-400" title="Verified Employer Entity"></i>' : ''}
+                                    </div>
+                                    
+                                    <!-- Glassdoor badge button -->
+                                    <button onclick="openCompanyModal('${job.company}')" class="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-2 py-0.5 rounded-full transition">
+                                        <i data-lucide="star" class="w-3 h-3 fill-emerald-400"></i> ${job.glassdoorRating} ★ Glassdoor Insights
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bookmark Toggle -->
+                            <button onclick="toggleBookmark('${job.id}')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 transition">
+                                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-400 text-amber-400' : ''}"></i>
+                            </button>
+                        </div>
+
+                        <!-- Role Title -->
+                        <h3 class="font-bold text-slate-100 text-base mt-3 leading-snug">${job.role}</h3>
+
+                        <!-- AI Fit Match & Trust Score Badges -->
+                        <div class="flex items-center gap-2 mt-2 flex-wrap">
+                            <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 flex items-center gap-1">
+                                <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i> ${job.fitMatch}% AI Fit Match
+                            </span>
+                            <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${job.scamTrustScore >= 85 ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20' : 'bg-amber-500/10 text-amber-300 border-amber-500/20'} border flex items-center gap-1" title="Scam / Ghost Risk Detector">
+                                <i data-lucide="shield" class="w-3 h-3"></i> ${job.scamTrustScore}% Trust Score
+                            </span>
+                        </div>
+
+                        <!-- Extracted Metadata Badges -->
+                        <div class="grid grid-cols-2 gap-2 mt-3 text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="briefcase" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span>Exp: <strong class="text-slate-200">${job.experience}</strong></span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span>Openings: <strong class="text-slate-200">${job.openings}</strong></span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span class="truncate">${job.location}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span class="truncate text-emerald-400 font-medium">${job.salary}</span>
+                            </div>
+                        </div>
+
+                        <!-- Skills Pills -->
+                        <div class="flex flex-wrap gap-1.5 mt-3">
+                            ${job.skills.map(s => `<span class="px-2 py-0.5 text-[10px] font-medium bg-slate-800 text-slate-300 rounded-md border border-slate-700/60">${s}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Buttons -->
+                    <div class="pt-3 border-t border-slate-800/80 space-y-2">
+                        <div class="flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Extracted ${job.postedTime}</span>
+                            <a href="${job.linkedInUrl}" target="_blank" class="text-indigo-400 hover:underline flex items-center gap-1">
+                                <i data-lucide="external-link" class="w-3 h-3"></i> LinkedIn Post
+                            </a>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <!-- Direct Apply Button -->
+                            <a href="${job.applyLink}" target="_blank" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl text-center transition flex items-center justify-center gap-1.5 shadow-md">
+                                <i data-lucide="${job.applyType === 'email' ? 'mail' : 'send'}" class="w-3.5 h-3.5"></i> 
+                                ${job.applyType === 'email' ? 'Email HR Directly' : 'Direct Apply Link'}
+                            </a>
+                            <!-- AI Pitch Button -->
+                            <button onclick="openOutreachForJob('${job.id}')" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition" title="Generate AI Cold Email Pitch">
+                                <i data-lucide="wand-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function toggleBookmark(jobId) {
+            const job = jobsData.find(j => j.id === jobId);
+            if (job) {
+                job.status = job.status === "saved" ? "none" : "saved";
+                filterJobs();
+                renderKanbanBoard();
+            }
+        }
+
+        function runAIExtractor() {
+            const btn = document.getElementById('btn-run-extract');
+            const rawText = document.getElementById('raw-post-input').value;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Parsing NLP Stream...`;
+
+            // Reset UI step icons
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById('sim-step-' + i);
+                el.classList.add('opacity-50');
+                el.querySelector('.step-status').innerText = 'Idle';
+                el.querySelector('.step-status').className = 'step-status text-[10px] font-mono text-slate-500';
+            }
+
+            // Step 1 Execution
+            setTimeout(() => {
+                activateSimStep(1, "In Progress...", "text-amber-400");
+            }, 300);
+
+            // Step 2 Execution
+            setTimeout(() => {
+                activateSimStep(1, "Complete ✓", "text-emerald-400");
+                activateSimStep(2, "Categorizing...", "text-amber-400");
+            }, 1000);
+
+            // Step 3 Execution
+            setTimeout(() => {
+                activateSimStep(2, "Complete ✓", "text-emerald-400");
+                activateSimStep(3, "Matching Forums...", "text-amber-400");
+            }, 1800);
+
+            // Step 4 Execution & Publication
+            setTimeout(() => {
+                activateSimStep(3, "Complete ✓", "text-emerald-400");
+                activateSimStep(4, "Published Live", "text-emerald-400");
+
+                // Generate new Job Object
+                const newJob = {
+                    id: "job-" + (Date.now().toString().slice(-4)),
+                    company: "Sentinel Cyber Solutions",
+                    logoBg: "bg-indigo-600",
+                    logoText: "SC",
+                    verified: true,
+                    role: "Senior Incident Response & SIEM Analyst",
+                    category: "Cybersecurity",
+                    experience: "3-5 yrs",
+                    openings: 4,
+                    location: "Hybrid (Bengaluru)",
+                    workType: "Hybrid",
+                    salary: "₹18L - ₹26L / yr",
+                    skills: ["SIEM", "Splunk", "Python", "Threat Hunting", "Incident Response"],
+                    hrEmail: "hr.talent@sentinelcyber.io",
+                    applyType: "email",
+                    applyLink: "mailto:hr.talent@sentinelcyber.io",
+                    linkedInUrl: "https://linkedin.com/jobs/view/987123654",
+                    glassdoorRating: 4.4,
+                    reviewCount: 310,
+                    scamTrustScore: 97,
+                    fitMatch: 95,
+                    postedTime: "Just now",
+                    status: "saved"
+                };
+
+                document.getElementById('json-result').innerText = JSON.stringify(newJob, null, 2);
+                document.getElementById('sim-conf').classList.remove('hidden');
+
+                // Add to list if not existing duplicate
+                jobsData.unshift(newJob);
+                updateCategoryCounts();
+                renderJobCards();
+                populateOutreachJobSelect();
+
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="cpu" class="w-4 h-4"></i> Extract & Categorize with AI`;
+                lucide.createIcons();
+            }, 2600);
+        }
+
+        function activateSimStep(stepNum, statusText, colorClass) {
+            const el = document.getElementById('sim-step-' + stepNum);
+            el.classList.remove('opacity-50');
+            const statusEl = el.querySelector('.step-status');
+            statusEl.innerText = statusText;
+            statusEl.className = `step-status text-[10px] font-mono font-bold ${colorClass}`;
+        }
+
+        function loadSampleSnippet() {
+            document.getElementById('raw-post-input').value = `🔥 HIRING ALERT: CloudScale Systems is looking for a Lead DevOps & Infrastructure Engineer!
+Locations: Remote / Hybrid India
+Experience: 4 to 7 years
+Salary Budget: ₹28L - ₹42L
+
+Skills Required:
+- Kubernetes (EKS/GKE), Terraform, AWS, Docker, CI/CD with GitHub Actions.
+- Strong scripting in Bash / Python.
+
+Apply directly: careers@cloudscalesystems.com with resume subject 'DevOps-Lead-2026'`;
+        }
+
+        function openCompanyModal(companyName) {
+            const data = companyIntel[companyName] || {
+                name: companyName,
+                overallRating: 4.0,
+                workLifeBalance: 3.9,
+                careerGrowth: 4.1,
+                management: 3.8,
+                pros: ["Competitive pay package", "Good domain exposure"],
+                cons: ["Standard corporate deadlines"],
+                interviewProcess: "2 Technical Screening Rounds + HR Round.",
+                salaryBenchmark: "Market competitive for industry standards.",
+                aiSummary: "Verified corporate employer with standard engineering culture."
+            };
+
+            const modalContent = document.getElementById('modal-company-content');
+            modalContent.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                        ${data.name.substring(0,2).toUpperCase()}
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-100">${data.name}</h3>
+                        <p class="text-xs text-slate-400">Glassdoor & Reddit Forum Aggregated Insights</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-center">
+                    <div>
+                        <div class="text-[10px] text-slate-400">Overall Rating</div>
+                        <div class="text-base font-bold text-emerald-400">${data.overallRating} ★</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400">Work-Life Balance</div>
+                        <div class="text-base font-bold text-indigo-400">${data.workLifeBalance} / 5</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400">Career Growth</div>
+                        <div class="text-base font-bold text-cyan-400">${data.careerGrowth} / 5</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400">Management</div>
+                        <div class="text-base font-bold text-purple-400">${data.management} / 5</div>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl text-xs text-indigo-300">
+                    <strong>AI Culture Summary:</strong> ${data.aiSummary}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-xl space-y-1.5">
+                        <h4 class="font-bold text-emerald-400 flex items-center gap-1">
+                            <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i> Key Employee Pros
+                        </h4>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1">
+                            ${data.pros.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="bg-rose-500/5 border border-rose-500/20 p-3 rounded-xl space-y-1.5">
+                        <h4 class="font-bold text-rose-400 flex items-center gap-1">
+                            <i data-lucide="thumbs-down" class="w-3.5 h-3.5"></i> Employee Cons / Red Flags
+                        </h4>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1">
+                            ${data.cons.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <h4 class="font-bold text-slate-200">Interview Process Breakdown:</h4>
+                    <p class="text-slate-400 bg-slate-950 p-2.5 rounded-xl border border-slate-800 leading-relaxed">${data.interviewProcess}</p>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <h4 class="font-bold text-slate-200">Salary Benchmark Insights:</h4>
+                    <p class="text-emerald-400 bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono">${data.salaryBenchmark}</p>
+                </div>
+            `;
+
+            document.getElementById('company-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeCompanyModal() {
+            document.getElementById('company-modal').classList.add('hidden');
+        }
+
+        function renderCompanyIntelView() {
+            const companyName = document.getElementById('intel-company-select').value;
+            const data = companyIntel[companyName];
+            const container = document.getElementById('company-intel-content');
+
+            container.innerHTML = `
+                <div class="lg:col-span-2 space-y-5 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-100">${data.name}</h3>
+                            <p class="text-xs text-slate-400">Detailed Forum Deep Dive & Verification Status</p>
+                        </div>
+                        <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold">
+                            ${data.overallRating} ★ Overall Glassdoor
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">Work-Life Balance</span>
+                            <div class="text-base font-bold text-indigo-400 mt-0.5">${data.workLifeBalance} / 5.0</div>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">Career Growth</span>
+                            <div class="text-base font-bold text-cyan-400 mt-0.5">${data.careerGrowth} / 5.0</div>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">Management Rating</span>
+                            <div class="text-base font-bold text-purple-400 mt-0.5">${data.management} / 5.0</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <h4 class="font-bold text-slate-200">Interview Rounds & Difficulty:</h4>
+                        <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 leading-relaxed font-mono">
+                            ${data.interviewProcess}
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <h4 class="font-bold text-slate-200">AI Culture & Work Environment Executive Summary:</h4>
+                        <div class="p-3.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-300 leading-relaxed">
+                            ${data.aiSummary}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column pros / cons -->
+                <div class="space-y-5">
+                    <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Highlighted Community Pros
+                        </h4>
+                        <ul class="text-xs text-slate-300 space-y-2">
+                            ${data.pros.map(p => `<li class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex items-start gap-2"><span class="text-emerald-400">✓</span> ${p}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Identified Drawbacks / Cons
+                        </h4>
+                        <ul class="text-xs text-slate-300 space-y-2">
+                            ${data.cons.map(c => `<li class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex items-start gap-2"><span class="text-rose-400">⚠️</span> ${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            lucide.createIcons();
+        }
+
+        function populateOutreachJobSelect() {
+            const select = document.getElementById('outreach-job-select');
+            select.innerHTML = jobsData.map(j => `<option value="${j.id}">${j.role} @ ${j.company}</option>`).join('');
+        }
+
+        function openOutreachForJob(jobId) {
+            switchTab('assistant');
+            const select = document.getElementById('outreach-job-select');
+            select.value = jobId;
+            updateOutreachContext();
+            generateColdEmail();
+        }
+
+        function updateOutreachContext() {
+            const jobId = document.getElementById('outreach-job-select').value;
+            const job = jobsData.find(j => j.id === jobId) || jobsData[0];
+
+            // Render Skill gap list
+            const matchedSkills = job.skills.filter(s => candidateProfile.skills.includes(s));
+            const missingSkills = job.skills.filter(s => !candidateProfile.skills.includes(s));
+
+            const gapContainer = document.getElementById('skill-gap-list');
+            gapContainer.innerHTML = `
+                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 block text-[10px] uppercase tracking-wider font-semibold">Matched Skills (${matchedSkills.length})</span>
+                    <div class="flex flex-wrap gap-1 mt-1.5">
+                        ${matchedSkills.map(s => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-mono text-[10px]">${s}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 block text-[10px] uppercase tracking-wider font-semibold">Recommended Skill Additions (${missingSkills.length})</span>
+                    <div class="flex flex-wrap gap-1 mt-1.5">
+                        ${missingSkills.length > 0 ? missingSkills.map(s => `<span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-mono text-[10px]">${s}</span>`).join('') : '<span class="text-slate-500 text-[10px]">100% Skill Match!</span>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateColdEmail() {
+            const jobId = document.getElementById('outreach-job-select').value;
+            const tone = document.getElementById('outreach-tone').value;
+            const job = jobsData.find(j => j.id === jobId) || jobsData[0];
+
+            let emailText = "";
+            if (tone === "direct") {
+                emailText = `Subject: Application for ${job.role} - Experienced with ${job.skills.slice(0, 3).join(', ')}
+
+Dear Hiring Team at ${job.company},
+
+I came across your recent LinkedIn posting regarding the ${job.role} opening (${job.experience} experience requirement).
+
+With hands-on expertise in ${job.skills.join(', ')}, I have successfully architected and scaled secure software systems in fast-paced environments. My background directly aligns with your tech stack requirements.
+
+I have attached my resume for your review. Would you be open to a quick 10-minute introductory conversation this week?
+
+Best regards,
+John Doe
+GitHub / Portfolio: github.com/candidate
+Contact: ${job.hrEmail}`;
+            } else if (tone === "enthusiastic") {
+                emailText = `Subject: Passionate ${job.category} Engineer for ${job.role} Role!
+
+Hi HR Team at ${job.company},
+
+I've been following ${job.company}'s growth and was thrilled to see the extracted job post for ${job.role}! 
+
+Having worked closely with ${job.skills.slice(0, 4).join(' & ')}, I am deeply aligned with your product vision and culture standards. 
+
+I'd love to contribute to your current openings (${job.openings} active seats). Please find my resume attached.
+
+Looking forward to connecting!
+
+Warmly,
+John Doe`;
+            } else {
+                emailText = `Subject: Quick Note: ${job.role} candidate
+
+Hi Team,
+
+I'm reaching out regarding the ${job.role} position at ${job.company}. 
+
+Key Qualifications:
+• Experienced in ${job.skills.join(', ')}
+• Expertise in production-grade deployments & incident resolution
+
+Available for an interview at your convenience.
+
+Best,
+John Doe`;
+            }
+
+            document.getElementById('generated-email-output').value = emailText;
+        }
+
+        function copyGeneratedEmail() {
+            const textarea = document.getElementById('generated-email-output');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Cold Email copied to clipboard!');
+        }
+
+        function renderKanbanBoard() {
+            const savedContainer = document.getElementById('kanban-saved');
+            const appliedContainer = document.getElementById('kanban-applied');
+            const interviewingContainer = document.getElementById('kanban-interviewing');
+            const offerContainer = document.getElementById('kanban-offer');
+
+            savedContainer.innerHTML = renderKanbanCards('saved');
+            appliedContainer.innerHTML = renderKanbanCards('applied');
+            interviewingContainer.innerHTML = renderKanbanCards('interviewing');
+            offerContainer.innerHTML = renderKanbanCards('offer');
+
+            lucide.createIcons();
+        }
+
+        function renderKanbanCards(statusKey) {
+            const filtered = jobsData.filter(j => j.status === statusKey);
+            if (filtered.length === 0) {
+                return `<div class="p-3 text-center border border-dashed border-slate-800 rounded-xl text-slate-600 text-xs">No roles in this stage</div>`;
+            }
+
+            return filtered.map(job => `
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2 text-xs">
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-slate-200">${job.company}</span>
+                        <span class="text-[10px] text-emerald-400 font-mono">${job.salary.split('/')[0]}</span>
+                    </div>
+                    <div class="text-slate-400 text-[11px] font-medium truncate">${job.role}</div>
+                    
+                    <div class="flex items-center justify-between pt-1 border-t border-slate-900 text-[10px]">
+                        <span class="text-slate-500">${job.location.split('(')[0]}</span>
+                        
+                        <select onchange="updateJobStatus('${job.id}', this.value)" class="bg-slate-900 border border-slate-800 text-slate-300 rounded px-1.5 py-0.5 focus:outline-none">
+                            <option value="saved" ${job.status === 'saved' ? 'selected' : ''}>Saved</option>
+                            <option value="applied" ${job.status === 'applied' ? 'selected' : ''}>Applied</option>
+                            <option value="interviewing" ${job.status === 'interviewing' ? 'selected' : ''}>Interviewing</option>
+                            <option value="offer" ${job.status === 'offer' ? 'selected' : ''}>Offer</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateJobStatus(jobId, newStatus) {
+            const job = jobsData.find(j => j.id === jobId);
+            if (job) {
+                job.status = newStatus;
+                renderKanbanBoard();
+            }
+        }
+
+        function openProfileModal() {
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        function updateProfileSkills() {
+            const track = document.getElementById('user-track-select').value;
+            const input = document.getElementById('user-skills-input');
+            if (track === "Cybersecurity") {
+                input.value = "Python, SIEM, Splunk, Kubernetes, Docker, Network Security";
+            } else if (track === "DevOps") {
+                input.value = "Kubernetes, Terraform, AWS, Docker, Bash, CI/CD";
+            } else if (track === "SDE") {
+                input.value = "Node.js, Golang, PostgreSQL, Kafka, Microservices, React";
+            } else {
+                input.value = "Python, PyTorch, LangChain, Vector DBs, Machine Learning";
+            }
+        }
+
+        function saveUserProfile() {
+            const track = document.getElementById('user-track-select').value;
+            const exp = parseInt(document.getElementById('user-exp-select').value);
+            const skillsStr = document.getElementById('user-skills-input').value;
+
+            candidateProfile = {
+                track: track,
+                exp: exp,
+                skills: skillsStr.split(',').map(s => s.trim())
+            };
+
+            // Recalculate AI Match % scores dynamically
+            jobsData.forEach(job => {
+                let match = 50;
+                if (job.category === candidateProfile.track) match += 25;
+                const overlappingSkills = job.skills.filter(s => candidateProfile.skills.some(cs => cs.toLowerCase() === s.toLowerCase()));
+                match += (overlappingSkills.length / job.skills.length) * 25;
+                job.fitMatch = Math.min(99, Math.round(match));
+            });
+
+            closeProfileModal();
+            filterJobs();
+            updateOutreachContext();
+            alert('Candidate profile saved! AI Match scores updated across all job posts.');
+        }
+    </script>
+</body>
+</html>
